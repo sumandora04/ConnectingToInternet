@@ -20,6 +20,19 @@ package com.example.android.marsrealestate.overview
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.android.marsrealestate.network.MarsApi
+import com.example.android.marsrealestate.network.MarsProperty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+
+
+enum class MarsApiStatus{
+    LOADING,
+    ERROR,
+    DONE
+}
 
 /**
  * The [ViewModel] that is attached to the [OverviewFragment].
@@ -27,11 +40,23 @@ import androidx.lifecycle.ViewModel
 class OverviewViewModel : ViewModel() {
 
     // The internal MutableLiveData String that stores the status of the most recent request
-    private val _response = MutableLiveData<String>()
+    private val _status = MutableLiveData<MarsApiStatus>()
 
     // The external immutable LiveData for the request status String
-    val response: LiveData<String>
-        get() = _response
+    val status: LiveData<MarsApiStatus>
+        get() = _status
+
+
+    //For properties response:
+    private val _properties = MutableLiveData<List<MarsProperty>>()
+    val properties:LiveData<List<MarsProperty>>
+    get() = _properties
+
+    // Job for coroutine:
+    private val viewModelJob = Job()
+    //Scope:
+    private val coroutineScope = CoroutineScope(viewModelJob+Dispatchers.Main)
+
 
     /**
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
@@ -44,6 +69,27 @@ class OverviewViewModel : ViewModel() {
      * Sets the value of the status LiveData to the Mars API status.
      */
     private fun getMarsRealEstateProperties() {
-        _response.value = "Set the Mars API Response here!"
+
+        coroutineScope.launch {
+            var getPropertiesDeferred = MarsApi.retrofitService.getProperties()
+
+            try {
+                _status.value = MarsApiStatus.LOADING
+                var listResult = getPropertiesDeferred.await()
+                if (listResult.size>0){
+                    _properties.value = listResult
+
+                }
+                _status.value = MarsApiStatus.DONE
+            } catch (e: Exception) {
+                _status.value = MarsApiStatus.ERROR
+                _properties.value = ArrayList() // Assign an empty arrayList, so that the recyclerView will be cleared.
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
     }
 }

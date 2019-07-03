@@ -16,3 +16,60 @@
  */
 
 package com.example.android.marsrealestate.overview
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.example.android.marsrealestate.R
+import com.example.android.marsrealestate.databinding.GridViewItemBinding
+import com.example.android.marsrealestate.network.MarsProperty
+
+class PhotoGridAdapter : ListAdapter<MarsProperty,PhotoGridAdapter.MarsPropertyViewHolder>(MarsPropertyDiffCallBack()){
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarsPropertyViewHolder {
+        return MarsPropertyViewHolder.from(parent)
+    }
+
+
+    override fun onBindViewHolder(holder: MarsPropertyViewHolder, position: Int) {
+        val item = getItem(position)
+        holder.bind(item)
+
+    }
+
+    class MarsPropertyViewHolder private constructor(val binding: GridViewItemBinding): RecyclerView.ViewHolder(binding.root) {
+        var imageView:ImageView = binding.marsImage
+
+        fun bind(marsProperty: MarsProperty){
+            binding.property = marsProperty
+            binding.executePendingBindings()
+        }
+
+        companion object {
+            fun from(parent: ViewGroup): MarsPropertyViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = GridViewItemBinding.inflate(layoutInflater,parent,false)
+                return MarsPropertyViewHolder(binding)
+            }
+        }
+
+
+    }
+
+
+    class MarsPropertyDiffCallBack:DiffUtil.ItemCallback<MarsProperty>(){
+        override fun areItemsTheSame(oldItem: MarsProperty, newItem: MarsProperty): Boolean {
+           return oldItem.id==newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: MarsProperty, newItem: MarsProperty): Boolean {
+           return oldItem==newItem
+        }
+
+    }
+
+}

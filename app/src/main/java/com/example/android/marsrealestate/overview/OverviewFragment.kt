@@ -21,8 +21,10 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.android.marsrealestate.R
 import com.example.android.marsrealestate.databinding.FragmentOverviewBinding
+import com.example.android.marsrealestate.databinding.GridViewItemBinding
 
 /**
  * This fragment shows the the status of the Mars real-estate web services transaction.
@@ -49,6 +51,10 @@ class OverviewFragment : Fragment() {
 
         // Giving the binding access to the OverviewViewModel
         binding.viewModel = viewModel
+
+        //RecyclerView -> setting the PhotoGridAdapter()
+        binding.photoGridRecycler.layoutManager = GridLayoutManager(activity,2)
+        binding.photoGridRecycler.adapter = PhotoGridAdapter()
 
         setHasOptionsMenu(true)
         return binding.root
